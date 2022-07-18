@@ -25,6 +25,7 @@
 GDBUS=gdbus
 XINPUT=xinput
 XRANDR=xrandr
+LOGPATH=/tmp/sensor.log
 
 # Receives input from monitor-sensor (part of iio-sensor-proxy package)
 # Screen orientation and launcher location is set based upon accelerometer position
@@ -32,17 +33,17 @@ XRANDR=xrandr
 # This script should be added to startup applications for the user
 
 # Clear sensor.log so it doesn't get too long over time
-> sensor.log
+> $LOGPATH
 
 # Launch monitor-sensor and store the output in a variable that can be parsed by the rest of the script
-monitor-sensor >> sensor.log 2>&1 &
+monitor-sensor >> $LOGPATH 2>&1 &
 
 # Parse output or monitor sensor to get the new orientation whenever the log file is updated
 # Possibles are: normal, bottom-up, right-up, left-up
 # Light data will be ignored
-while inotifywait -e modify sensor.log; do
+while inotifywait -e modify $LOGPATH; do
 # Read the last line that was added to the file and get the orientation
-CURRENTORIENTATION=$(tail -n 1 sensor.log | grep 'orientation' | grep -oE '[^ ]+$')
+CURRENTORIENTATION=$(tail -n 1 $LOGPATH | grep 'orientation' | grep -oE '[^ ]+$')
 
 # Functions
 get_dbus_orientation () {
